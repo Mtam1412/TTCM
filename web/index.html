@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MealMate – Smart Recipe Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Source Serif 4 = chữ có chân (tiêu đề, nội dung); Lato = chữ nhãn IN HOA nhỏ -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============ CỘT TRÁI: logo, menu, đăng nhập ============ -->
+  <aside class="side" aria-label="Main menu">
+    <div class="brand">
+      <img class="brand-logo" src="assets/images/logo-sprout.svg" alt="">
+      <div class="brand-name">MealMate</div>
+      <div class="brand-tag">SMART RECIPE FINDER</div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button data-v="home" class="on"><span class="ic" data-icon="home"></span>Home</button>
+      <button data-v="fav"><span class="ic" data-icon="heart"></span>Favorites</button>
+      <button data-v="hist"><span class="ic" data-icon="clock"></span>History</button>
+    </nav>
+
+    <img class="side-leaf" src="assets/images/leaf-large.svg" alt="" aria-hidden="true">
+
+    <div class="side-bottom">
+      <div class="side-line"></div>
+      <div id="authArea" class="auth-area">
+        <button id="loginBtn" class="btn-outline"><span class="ic" data-icon="user"></span>Sign in</button>
+        <button id="registerBtn" class="btn-solid"><span class="ic" data-icon="userplus"></span>Create account</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ GIỮA: tìm kiếm + danh sách món ============ -->
+  <main class="main">
+    <header class="hero-head">
+      <img class="title-leaf" src="assets/images/leaf-small.svg" alt="" aria-hidden="true">
+      <h1>Find something <span>delicious.</span></h1>
+      <p>Tell us what you have. We’ll help you turn it into a meal.</p>
+    </header>
+
+    <section class="card-box search-box" aria-label="Search">
+      <div class="srow">
+        <div class="f-ing">
+          <label class="lbl" for="ing">Ingredients</label>
+          <div class="field has-icon"><span class="ic" data-icon="search"></span>
+            <input id="ing" placeholder="chicken, carrot, potato..." autocomplete="off" aria-label="Ingredients"></div>
+        </div>
+        <div class="f-sel">
+          <label class="lbl" for="sv">Servings</label>
+          <div class="field sel"><select id="sv" aria-label="Servings"></select><span class="ic chev" data-icon="chevron"></span></div>
+        </div>
+        <div class="f-sel">
+          <label class="lbl" for="meal">Meal type</label>
+          <div class="field sel"><select id="meal" aria-label="Meal type"></select><span class="ic chev" data-icon="chevron"></span></div>
+        </div>
+      </div>
+
+      <div class="chips" id="ingChips" aria-label="Chosen ingredients"></div>
+
+      <div class="sep"></div>
+
+      <label class="lbl" for="q">Search</label>
+      <div class="qrow">
+        <div class="qfield field has-icon"><span class="ic" data-icon="search"></span>
+          <input id="q" placeholder="Search by dish name..." autocomplete="off" aria-label="Dish name">
+          <button class="go" id="go" disabled><span class="ic" data-icon="search"></span>Search</button>
+        </div>
+        <label class="match"><input id="all" type="checkbox" checked><span class="box" aria-hidden="true"><span class="ic" data-icon="check"></span></span>Match ingredients</label>
+      </div>
+    </section>
+
+    <h2 class="rtitle"><span id="rtitle">Recipes</span><small id="cnt"></small></h2>
+
+    <section class="card-box filters" id="filters" aria-label="Filters">
+      <div class="fcol"><label class="lbl" for="diet">Diet</label>
+        <div class="field sel"><select id="diet"></select><span class="ic chev" data-icon="chevron"></span></div></div>
+      <div class="fcol"><label class="lbl" for="cu">Cuisine</label>
+        <div class="field sel"><select id="cu"></select><span class="ic chev" data-icon="chevron"></span></div></div>
+      <div class="fcol"><label class="lbl" for="dish">Diet type</label>
+        <div class="field sel"><select id="dish"></select><span class="ic chev" data-icon="chevron"></span></div></div>
+      <div class="fcol"><label class="lbl" for="ord">Calories</label>
+        <div class="field sel"><select id="ord">
+          <option value="">All calories</option><option value="asc">Low to high</option><option value="desc">High to low</option>
+        </select><span class="ic chev" data-icon="chevron"></span></div></div>
+    </section>
+
+    <div id="status" role="status">Loading recipes...</div>
+    <div class="grid" id="grid"></div>
+    <div id="pager" class="pager" aria-label="Recipe pages"></div>
+  </main>
+
+  <!-- ============ CỘT PHẢI: chi tiết món ============ -->
+  <aside class="panel-wrap" id="panelWrap">
+    <div class="panel" id="panel">
+      <header class="panel-head"><h2>Dish details</h2><button id="pclose" class="xbtn" aria-label="Close"><span class="ic" data-icon="close"></span></button></header>
+      <div class="panel-body" id="pn"><p class="empty">Select a dish to see its ingredients and details.</p></div>
+      <footer class="panel-foot ai-only" id="pfoot" hidden><button id="ask" class="ask"><span class="ic" data-icon="chat"></span>Ask about this dish</button></footer>
+
+      <!-- Chatbot: chỉ giải thích thành phần và dinh dưỡng của món đang xem -->
+      <section class="chat" id="chat" hidden aria-label="Ask about this dish">
+        <header class="panel-head"><button id="chatBack" class="xbtn" aria-label="Back"><span class="ic" data-icon="back"></span></button><h2>Ask about this dish</h2><button id="chatClose" class="xbtn" aria-label="Close"><span class="ic" data-icon="close"></span></button></header>
+        <div class="msgs" id="msgs"></div>
+        <div class="csug" id="sug"></div>
+        <form class="chat-in" id="chatForm"><input id="chatText" placeholder="Ask about the ingredients or nutrition..." autocomplete="off" maxlength="500" aria-label="Your question"><button class="go" id="chatSend" type="submit">Send</button></form>
+        <p class="note">AI answers may be wrong. Nutrition values are for reference only.</p>
+      </section>
+    </div>
+  </aside>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- ============ Cửa sổ Sign in / Create account ============ -->
+<div class="auth-modal" id="authModal" hidden>
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button class="xbtn auth-close" id="authClose" aria-label="Close"><span class="ic" data-icon="close"></span></button>
+    <img class="auth-logo" src="assets/images/logo-sprout.svg" alt="">
+    <h2 id="authTitle">Sign in</h2>
+    <p class="auth-sub" id="authSub">Sign in to use your account.</p>
+    <form id="authForm" novalidate>
+      <label id="usernameLabel"><span class="lbl" id="usernameText">Username or email</span>
+        <input id="authUsername" autocomplete="username" required></label>
+      <label id="emailLabel" hidden><span class="lbl">Email</span>
+        <input id="authEmail" type="email" autocomplete="email"></label>
+      <label><span class="lbl">Password</span>
+        <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label>
+      <p class="auth-error" id="authError" role="alert"></p>
+      <button class="go auth-submit" id="authSubmit" type="submit">Sign in</button>
+    </form>
+    <button class="auth-switch" id="authSwitch">Don’t have an account? Create one</button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
