@@ -127,10 +127,13 @@
     <form id="authForm" novalidate>
       <label id="usernameLabel"><span class="lbl" id="usernameText">Username or email</span>
         <input id="authUsername" autocomplete="username" required></label>
+        <p class="field-error" id="errUsername"></p></label>
       <label id="emailLabel" hidden><span class="lbl">Email</span>
         <input id="authEmail" type="email" autocomplete="email"></label>
+        <p class="field-error" id="errEmail"></p></label>
       <label><span class="lbl">Password</span>
         <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label>
+        <p class="field-error" id="errPassword"></p></label>
       <p class="auth-error" id="authError" role="alert"></p>
       <button class="go auth-submit" id="authSubmit" type="submit">Sign in</button>
     </form>

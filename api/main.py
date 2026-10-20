@@ -125,13 +125,12 @@ def register(body: RegisterIn, response: Response):
         raise HTTPException(400, "Email không hợp lệ.")
 
     conn = db()
-    exists = conn.execute(
-        "SELECT id FROM users WHERE lower(username)=lower(?) OR lower(email)=lower(?)",
-        (username, email)
-    ).fetchone()
-    if exists:
+    if conn.execute("SELECT 1 FROM users WHERE lower(username)=lower(?)", (username,)).fetchone():
         conn.close()
-        raise HTTPException(409, "Tên đăng nhập hoặc email đã được sử dụng.")
+        raise HTTPException(409, "username_taken")
+    if conn.execute("SELECT 1 FROM users WHERE lower(email)=lower(?)", (email,)).fetchone():
+        conn.close()
+        raise HTTPException(409, "email_taken")
 
     cur = conn.execute(
         "INSERT INTO users(username,email,password_hash,created_at) VALUES(?,?,?,?)",

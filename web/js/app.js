@@ -319,6 +319,12 @@ $("chatForm").addEventListener("submit",e=>{e.preventDefault();const v=$("chatTe
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("authModal").hidden)closeAuth();else if(!$("chat").hidden)closeChat()}});
 
 /* ---------- 6) Đăng ký / đăng nhập ---------- */
+function setErr(f,msg){            // f = "Username" | "Email" | "Password"
+ const p=$("err"+f),i=$("auth"+f);
+ if(p)p.textContent=msg;
+ if(i)i.classList.toggle("invalid",!!msg);
+}
+function clearErrs(){["Username","Email","Password"].forEach(f=>setErr(f,""));$("authError").textContent=""}
 function openAuth(mode="login"){
  authMode=mode;const login=mode==="login";
  $("authModal").hidden=false;
@@ -329,7 +335,7 @@ function openAuth(mode="login"){
  $("authPassword").autocomplete=login?"current-password":"new-password";
  $("authSubmit").textContent=login?"Sign in":"Create account";
  $("authSwitch").textContent=login?"Don’t have an account? Create one":"Already have an account? Sign in";
- $("authError").textContent="";
+ clearErrs();
  $("authUsername").value="";$("authEmail").value="";$("authPassword").value="";
  setTimeout(()=>$("authUsername").focus(),50);
 }
@@ -342,9 +348,10 @@ async function authRequest(url,payload){
  catch(e){throw new Error(SERVER_HINT)}                     // server chưa chạy / mở sai địa chỉ
  let data={};try{data=await r.json()}catch(e){}
  if(!r.ok){
-  if(AUTH_ERR[r.status])throw new Error(AUTH_ERR[r.status]);
-  if(r.status===404||r.status===405)throw new Error(SERVER_HINT);
-  throw new Error(`Server error ${r.status}: `+(typeof data.detail==="string"?data.detail:"please check the terminal running uvicorn."));
+  const mk=msg=>Object.assign(new Error(msg),{status:r.status,code:data.detail});
+  if(AUTH_ERR[r.status])throw mk(AUTH_ERR[r.status]);
+  if(r.status===404||r.status===405)throw mk(SERVER_HINT);
+  throw mk(`Server error ${r.status}: `+(typeof data.detail==="string"?data.detail:"please check the terminal running uvicorn."));
  }
  return data;
 }
@@ -372,17 +379,22 @@ async function logout(){
 $("authClose").onclick=closeAuth;
 $("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});
 $("authSwitch").onclick=()=>openAuth(authMode==="login"?"register":"login");
+["Username","Email","Password"].forEach(f=>$("auth"+f).addEventListener("input",()=>setErr(f,"")));
 $("authForm").addEventListener("submit",async e=>{
  e.preventDefault();
  const errBox=$("authError"),btn=$("authSubmit"),u=$("authUsername").value.trim(),em=$("authEmail").value.trim(),pw=$("authPassword").value;
- errBox.textContent="";
+ clearErrs();
  // Kiểm tra nhanh ở trình duyệt (server vẫn kiểm tra lại)
- if(!u||!pw){errBox.textContent="Please fill in all fields.";return}
+ let bad=false;
+ if(!u){setErr("Username",authMode==="login"?"Please enter your username or email.":"Please enter a username.");bad=true}
+ else if(authMode==="register"&&!/^[A-Za-z0-9_]{3,30}$/.test(u)){setErr("Username","3–30 characters: letters, numbers or underscores only.");bad=true}
  if(authMode==="register"){
-  if(!/^[A-Za-z0-9_]{3,30}$/.test(u)){errBox.textContent="Username: 3–30 letters, numbers or underscores.";return}
-  if(!/^\S+@\S+\.\S+$/.test(em)){errBox.textContent="Please enter a valid email.";return}
-  if(pw.length<6){errBox.textContent="Password must be at least 6 characters.";return}
+  if(!em){setErr("Email","Please enter your email.");bad=true}
+  else if(!/^\S+@\S+\.\S+$/.test(em)){setErr("Email","Invalid email (e.g. name@example.com).");bad=true}
  }
+ if(!pw){setErr("Password","Please enter your password.");bad=true}
+ else if(authMode==="register"&&pw.length<6){setErr("Password","Password must be at least 6 characters.");bad=true}
+ if(bad)return;
  btn.disabled=true;
  try{
   const data=authMode==="login"
@@ -390,11 +402,15 @@ $("authForm").addEventListener("submit",async e=>{
    :await authRequest("api/register",{username:u,email:em,password:pw});
   currentUser={username:data.username,email:data.email};
   renderAuth();closeAuth();
- }catch(err){errBox.textContent=err.message}
+ }catch(err){
+  if(err.status===401)setErr("Password","Incorrect username/email or password.");
+  else if(err.code==="username_taken")setErr("Username","This username is already taken.");
+  else if(err.code==="email_taken")setErr("Email","This email is already registered.");
+  else errBox.textContent=err.message;
+ }
  btn.disabled=false;
 });
 
-/* ---------- Khởi động ---------- */
 renderAuth();renderChips();
 setPanel(innerWidth>1360);   // màn hình rộng: cột chi tiết luôn hiện; màn hình hẹp: chỉ hiện khi chọn món
 loadMe();

@@ -234,7 +234,10 @@ button.chip:hover{background:#e7e3d1}
 .auth-card form .lbl{margin-bottom:7px}
 .auth-card form input{width:100%;height:46px;border:1px solid var(--line);background:var(--field);border-radius:12px;padding:0 14px;font:400 19px/1 var(--serif);outline:0}
 .auth-card form input:focus{border-color:#8f9a6b;box-shadow:0 0 0 3px rgba(122,135,84,.18)}
-.auth-error{min-height:24px;margin:10px 0 0;color:#a3382b;font-size:16px;line-height:1.35}
+.auth-error{min-height:24px;margin:10px 0 0;color:#d93025;font-size:16px;line-height:1.35}
+.field-error{margin:6px 0 0;color:#d93025;font-size:15px;line-height:1.35}
+.field-error:empty{display:none}
+.auth-card form input.invalid{border-color:#d93025;box-shadow:0 0 0 3px rgba(217,48,37,.12)}
 .auth-submit{width:100%;height:50px;margin-top:6px;font-size:21px}
 .auth-switch{display:block;width:100%;margin-top:14px;border:0;background:none;color:var(--green);font:600 17px/1.2 var(--serif);text-decoration:underline;text-underline-offset:3px}
 .scrim{position:fixed;inset:0;background:rgba(35,42,28,.35);z-index:20}
